@@ -1,0 +1,15 @@
+{% block select %}
+<select 
+id="{{ select_id }}" 
+class="p-2 text-white rounded bg-gradient-to-r from-cyan-700 via-emerald-800 via-sky-700 via-cyan-800 to-sky-700" 
+hx-get="/api/select/{{ select_name }}"
+hx-trigger="load" 
+hx-target="#select_target">
+<div id="select_target">
+    {% for option in select_options %}
+    <option id="{{ select_target }}" value="">{{ option }}{</option>
+    <!-- Options will be injected here -->
+    {% endfor %}
+    </div>
+  </select>
+{% endblock %}

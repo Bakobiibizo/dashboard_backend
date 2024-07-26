@@ -1,0 +1,23 @@
+{% block content %}
+<section id=""drop-down-section>
+      <div class="flex flex-col w-full p-2 lg:w-1/2">
+        <div class="h-full p-4 rounded-md bg-slate-900">
+          <div class="flex items-center justify-between" hx-get="api/keys">
+            <h2 class="p-2 text-xl font-semibold">Total Value: {$total_balances}</h2>
+            <div class="flex space-x-2">
+                    {% include 'components/select.html' %}
+            </div>
+            <div class="flex space-x-2">
+                    {% include 'components/select.html' %}
+            </div>
+          </div>
+        </div>
+      </div>
+</section>
+<section id="data-table-section">
+    <h2>Data Table Component</h2>
+    <div hx-get="/data-table" hx-trigger="load">
+      Loading data table...
+    </div>
+  </section>
+{% endblock %}

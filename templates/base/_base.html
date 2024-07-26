@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Eden Mining Operations GUI</title>
+    <script src="https://unpkg.com/htmx.org"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body class="p-2 text-white bg-gradient-to-r from-cyan-800 via-emerald-800 via-sky-900 via-cyan-800 to-sky-800">
+    <div class="flex flex-col gap-2 lg:flex-row">
+      <!-- Middle Column -->
+
+      <!-- Right Column -->
+      <div class="flex flex-col w-1/2 col-span-5 p-2 lg:w-1/2">
+        <div class="p-4 rounded-md shadow bg-slate-900">
+          <h2 class="pb-2 mb-2 text-xl font-semibold border-b">Validator</h2>
+        <div class="col-span-1 p-4 rounded-md shadow bg-slate-900" hx-get="/api/validator-data" hx-trigger="load" hx-target="#replace">
+          <div class="justify-center col-span-2 gap-4 p-4 border rounded-lg shadow-md bg-gradient-to-r from-slate-600 to-slate-700 text-slate-600 border-slate-500">
+            <div id="replace" class="rounded-md"></div>
+          </div>
+          <div class="w-full p-4 rounded-md spacey-y-2">
+            <button class="w-1/5 p-2 text-white rounded bg-gradient-to-r from-cyan-700 via-emerald-800 via-sky-700 via-cyan-800 to-sky-700" hx-post="/api/cash-out">Cash Out</button>
+            <button class="w-1/5 p-2 text-white rounded bg-gradient-to-r from-cyan-700 via-emerald-800 via-sky-700 via-cyan-800 to-sky-700" hx-post="/api/transfer">Transfer</button>
+            <button class="w-1/5 p-2 text-white rounded bg-gradient-to-r from-cyan-700 via-emerald-800 via-sky-700 via-cyan-800 to-sky-700" hx-post="/api/stake">Stake</button>
+            <button class="w-1/5 p-2 text-white rounded bg-gradient-to-r from-cyan-700 via-emerald-800 via-sky-700 via-cyan-800 to-sky-700" hx-post="/api/run-command">Run Command</button>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+    <div class="flex flex-col w-full space-y-2 lg:w-full">
+      <div class="p-2 rounded-md shadow bg-slate-900">
+        <h2 class="pt-2 mb-2 text-xl font-semibold border-b">Keys</h2>
+        <div class="h-[600px] overflow-y-scroll">
+            {% block table %}
+                {% include 'components/table.html' %}
+            {% endblock %}
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
