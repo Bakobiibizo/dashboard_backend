@@ -1,4 +1,5 @@
 import json
+import http
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.templating import Jinja2Templates
 from generate.get_all_balance import get_balances, check_keyring
@@ -15,6 +16,7 @@ async def data_table(request: Request):
     data = get_data(request)
     return templates.TemplateResponse("components/data_table.html", {"request": request, "data": data})
 
+
 REPORT_MAP = {
     "eden": "main_reports/eden.json",
     "personal": "main_reports/personal.json",
@@ -23,7 +25,7 @@ REPORT_MAP = {
 }
 
 
-def get_data(request: Request, reportSelection: str = "eden"):
+def get_data(reportSelection: str = "eden"):
     logger.info("Loading data...")
     report_path = REPORT_MAP[reportSelection]
     check_keyring(report_path)
@@ -37,6 +39,3 @@ def get_data(request: Request, reportSelection: str = "eden"):
         raise HTTPException({"status_code": 500, "message": "Error loading data"}) from e
 
 
-if __name__ == "__main__":
-    request = Request("")
-    get_data(request, "eden")

@@ -12,6 +12,7 @@ from loguru import logger
 from dotenv import load_dotenv
 
 from routes.data_table import get_data, router as data_router
+from routes.total_table import get_table_data, router as total_router
 from generate.get_query_maps import get_query_map
 from generate.get_all_balance import check_keyring
 
@@ -21,6 +22,7 @@ templates = Jinja2Templates("./templates")
 app = FastAPI()
 
 app.include_router(data_router)
+app.include_router(total_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -41,7 +43,7 @@ async def startup():
 def post_data(data):
     logger.info(data)
     try:
-        response = requests.post("https://n8n.zshare.us/webhook/8710036d-8914-4f36-9a73-684c3a1dcbd4", json=data, timeout=30)
+        response = requests.post(URL, json=data, timeout=30)
         if response.status_code == 200:
             return response.json()
     except HTTPException as e:

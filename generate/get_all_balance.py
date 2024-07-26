@@ -1,5 +1,5 @@
 import json
-from wallet.get_keyring import get_keyring
+from wallet.get_key_dict import get_key_dict
 
 
 def get_balance_map():
@@ -127,7 +127,7 @@ def get_balances(key_data):
 
 
 def check_keyring(key_path):
-    key_dict = get_keyring(key_path)
+    key_dict = get_key_dict(key_path)
     key_dict = get_balances(key_dict)
     with open("main_reports/keyring.json", "w", encoding="utf-8") as f:
         json.dump(key_dict, f, indent=4)
