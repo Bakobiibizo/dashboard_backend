@@ -32,12 +32,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.on_event("startup")
 async def startup():
     logger.info("Startup")
     keyring = check_keyring("main_reports/eden.json")
     logger.info(keyring)
-    return post_data(keyring)        
+    return post_data(keyring)
 
 
 def post_data(data):
@@ -55,6 +56,7 @@ def post_data(data):
 HOST = os.getenv("HOST", "127.0.0.1")
 PORT = os.getenv("PORT", 8787)
 
+
 @app.get("/", response_class=Response)
 async def main(request: Request):
     logger.info("Loading main.html...")
@@ -62,7 +64,10 @@ async def main(request: Request):
         return templates.TemplateResponse("main.html", {"request": request})
     except Exception as e:
         logger.error("Error loading main {e}")
-        raise HTTPException({"status_code": 500, "message": "Error loading main.html"}) from e
-    
+        raise HTTPException(
+            {"status_code": 500, "message": "Error loading main.html"}
+        ) from e
+
+
 if __name__ == "__main__":
     uvicorn.run(app, host=HOST, port=PORT)

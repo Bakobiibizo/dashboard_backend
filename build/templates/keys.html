@@ -1,0 +1,21 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Keys - Communex Key Manager{% endblock %}
+
+{% block content %}
+<h2 class="text-3xl font-bold mb-4">Key Management</h2>
+<div class="bg-white p-4 rounded shadow">
+    <h3 class="text-xl font-bold mb-2">Your Keys</h3>
+    <ul id="key-list" class="space-y-2">
+    {% for key in keys %}
+        <li class="flex justify-between items-center">
+            <span>{{ key }}</span>
+            <button hx-get="/api/key_details/{{ key }}" hx-target="#key-details" class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">View Details</button>
+        </li>
+    {% endfor %}
+    </ul>
+</div>
+<div id="key-details" class="mt-4 bg-white p-4 rounded shadow">
+    <!-- Key details will be loaded here -->
+</div>
+{% endblock %}

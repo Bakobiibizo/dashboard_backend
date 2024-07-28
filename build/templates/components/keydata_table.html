@@ -1,0 +1,16 @@
+<table class="w-full border-collapse">
+    <thead>
+        <tr>
+            <th class="border p-2">Property</th>
+            <th class="border p-2">Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for key, value in key_data.items() %}
+        <tr>
+            <td class="border p-2">{{ key }}</td>
+            <td class="border p-2">{{ value }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

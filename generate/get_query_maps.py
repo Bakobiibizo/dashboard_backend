@@ -102,4 +102,4 @@ def get_query_map(keypath_name: str | QUERY_MAP_CHOICES):
 
 
 if __name__ == "__main__":
-    print(get_query_map(QUERY_MAP_CHOICES.balances))
+    print(update_query_maps())

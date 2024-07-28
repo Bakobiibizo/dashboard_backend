@@ -14,12 +14,12 @@ router = APIRouter()
 def get_table_data(requests: Request, report_selection: str = "eden"):
     table_data = get_table_data(report_selection)
     post_data(table_data)
-    
-    
+
+
 def post_data(table_data: dict):
-    response = requests.post(URL, json=table_data, timeout = 30)
+    response = requests.post(URL, json=table_data, timeout=30)
     return json.loads(response.text) if response.status_code == 200 else None
-    
+
 
 def get_table_data(report_selection: str = "eden"):
     with open("main_reports/keyring.json", "r", encoding="utf-8") as f:
@@ -40,7 +40,7 @@ def get_table_data(report_selection: str = "eden"):
         "Total Stake From": format_as_currency(total_stakefrom),
         "Total Balance": format_as_currency(total_balance),
         "Total Stake": format_as_currency(total_staketo),
-        "Grand Total": format_as_currency(grand_total)
+        "Grand Total": format_as_currency(grand_total),
     }
 
 

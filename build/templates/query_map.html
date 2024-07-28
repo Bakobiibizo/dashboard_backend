@@ -1,0 +1,18 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Query Maps - Communex Key Manager{% endblock %}
+
+{% block content %}
+<h2 class="text-3xl font-bold mb-4">Query Maps</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {% for query_map in query_maps %}
+    <div class="bg-white p-4 rounded shadow">
+        <h3 class="text-xl font-bold mb-2">{{ query_map|title }}</h3>
+        <button hx-get="/api/query_map/{{ query_map }}" hx-target="#query-result" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Load Data</button>
+    </div>
+    {% endfor %}
+</div>
+<div id="query-result" class="mt-8 bg-white p-4 rounded shadow">
+    <!-- Query results will be loaded here -->
+</div>
+{% endblock %}

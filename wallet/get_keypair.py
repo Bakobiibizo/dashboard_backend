@@ -17,9 +17,7 @@ def get_keypair(key_path, keydir="~/.commune/key"):
             json_data = json.loads(f.read())["data"]
             data = json.loads(json_data)
             keyring[key] = Keypair(
-                data["ss58_address"],
-                data["public_key"],
-                data["private_key"]
+                data["ss58_address"], data["public_key"], data["private_key"]
             )
     return keyring
 

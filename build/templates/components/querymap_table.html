@@ -1,0 +1,18 @@
+<table class="w-full border-collapse">
+    <thead>
+        <tr>
+            {% for header in headers %}
+            <th class="border p-2">{{ header }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+        <tr>
+            {% for cell in row %}
+            <td class="border p-2">{{ cell }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

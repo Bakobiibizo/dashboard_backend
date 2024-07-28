@@ -7,22 +7,23 @@ import json
 def create_multi_sig(signatories, threshold):
     # Sort the public keys
     sorted_pubkeys = sorted(signatories)
-    
+
     # Prepare the data for hashing
     data = bytes([0x00])  # Prefix for multi-sig account
     data += bytes([len(sorted_pubkeys)])  # Number of signatories
     data += bytes([threshold])  # Threshold
-    
+
     for pubkey in sorted_pubkeys:
         data += bytes.fromhex(pubkey)
-    
+
     # Hash the data
     return hashlib.blake2b(data, digest_size=32).digest()
 
+
 # Generate some example keypairs
-keypair1 = Keypair.create_from_uri('//Alice')
-keypair2 = Keypair.create_from_uri('//Bob')
-keypair3 = Keypair.create_from_uri('//Charlie')
+keypair1 = Keypair.create_from_uri("//Alice")
+keypair2 = Keypair.create_from_uri("//Bob")
+keypair3 = Keypair.create_from_uri("//Charlie")
 
 # Get the public keys
 pubkey1 = keypair1.public_key

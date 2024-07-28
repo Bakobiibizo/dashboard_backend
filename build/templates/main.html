@@ -1,0 +1,20 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Home - Communex Key Manager{% endblock %}
+
+{% block content %}
+<h2 class="text-3xl font-bold mb-4">Welcome to Communex Key Manager</h2>
+<p class="mb-4">This application allows you to manage your Communex keys and interact with the Communex network.</p>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="bg-white p-4 rounded shadow">
+        <h3 class="text-xl font-bold mb-2">Key Management</h3>
+        <p>View and manage your Communex keys securely.</p>
+        <a href="/keys" class="mt-2 inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Manage Keys</a>
+    </div>
+    <div class="bg-white p-4 rounded shadow">
+        <h3 class="text-xl font-bold mb-2">Query Maps</h3>
+        <p>Explore various query maps and network data.</p>
+        <a href="/querymaps" class="mt-2 inline-block bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">View Query Maps</a>
+    </div>
+</div>
+{% endblock %}
