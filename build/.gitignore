@@ -1,0 +1,8 @@
+.env
+.venv
+tigerking
+logs/*
+__pycache__
+.vscode
+*.json
+*.log

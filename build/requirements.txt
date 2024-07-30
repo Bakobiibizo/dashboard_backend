@@ -1,0 +1,4 @@
+communex
+loguru 
+cryptography
+jinja2

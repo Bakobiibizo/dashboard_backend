@@ -3,12 +3,14 @@ import shutil
 import zipfile
 import base64
 
+
 def zip_directory(path, zip_file):
     for root, dirs, files in os.walk(path):
         for file in files:
             zip_file.write(os.path.join(root, file), 
                            os.path.relpath(os.path.join(root, file), 
                                            os.path.join(path, '..')))
+
 
 def create_self_extracting_script(zip_filename):
     with open(zip_filename, "rb") as zip_file:
@@ -43,8 +45,9 @@ if __name__ == '__main__':
     extract_and_run()
 """
     
-    with open("run_app.py", "w") as f:
+    with open("run_app.py", "w", encoding="utf-8") as f:
         f.write(script)
+
 
 def main():
     # Create a temporary directory for bundling
@@ -74,6 +77,7 @@ def main():
     os.remove("app_bundle.zip")
 
     print("Self-extracting package created: run_app.py")
+
 
 if __name__ == "__main__":
     main()
