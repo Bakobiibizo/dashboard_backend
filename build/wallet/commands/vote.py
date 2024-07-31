@@ -12,6 +12,8 @@ keyring = wallet.keyring
 print(keyring)
 
 def vote(key, subnet):
-    data_maps = manager.load_data_maps(CONFIG.querymap_path)
-    weights = data_maps.read_text("utf-8")[subnet]["query_map_weights"]
+    subnet_maps = manager.get_subnet_maps(subnet)
+    weights = subnet_maps["weights"]
+    
+    
     print(weights)

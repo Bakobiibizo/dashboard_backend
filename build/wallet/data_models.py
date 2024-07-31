@@ -100,7 +100,7 @@ class Settings(Configuration):
         loguru_logger=logger,
         communex_client=comx,
         subnets=SUBNETS,
-        subnet_query_list=SUBNET_QUERY_LIST
+        subnet_query_list=SUBNET_QUERY_LIST,
     ):
         super().__init__(self)
         self.host = host
@@ -116,7 +116,7 @@ class Settings(Configuration):
         self.communex_client = communex_client
         self.subnets = subnets
         self.subnet_query_list = subnet_query_list
-        
+
 
 BT_RPC_METHODS = {
     "version": 0,
@@ -230,5 +230,19 @@ BT_RPC_METHODS = {
         "transaction_unstable_submitAndWatch",
         "transaction_unstable_unwatch",
         "unsubscribe_newHead",
-    ]
+    ],
+}
+
+SUBNET_VALIDATORS = {
+    "3": {
+        "name": "vali::synthia.",
+        "key": "5DUWKpGBneBbna6PFHZk18Gp9wyvLUFPiWy5maAARjRjayPp",
+        "uid": 149,
+    },
+    "4": {
+        "name": 'fam',
+        "key": "5FABzSh9BvHvNw8pnAwVQDwAMT2mM778njrC4aMDRJgqHmCy",
+        ""
+        
+    }
 }
