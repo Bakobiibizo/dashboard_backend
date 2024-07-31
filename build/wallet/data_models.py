@@ -38,6 +38,14 @@ logger.add(sink="./wallet/logs/data_models.log", level="INFO")
 HOST = "0.0.0.0"
 PORT = 5500
 RELOAD = True
+SUBNETS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17]
+SUBNET_QUERY_LIST = [
+    "query_map_incentive"
+    "query_map_emission"
+    "query_map_dividend"
+    "query_map_weights"
+    "query_map_lastupdate"
+]
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -73,6 +81,8 @@ class Configuration:
     jinja2_templates: field = field(default=templates)
     loguru_logger: field = field(default=logger)
     communex_client: field = field(default=comx)
+    subnets: field = field(default_factory=list)
+    subnet_query_list: field = field(default_factory=list)
 
 
 class Settings(Configuration):
@@ -89,6 +99,8 @@ class Settings(Configuration):
         jinja2_templates=templates,
         loguru_logger=logger,
         communex_client=comx,
+        subnets=SUBNETS,
+        subnet_query_list=SUBNET_QUERY_LIST
     ):
         super().__init__(self)
         self.host = host
@@ -102,3 +114,121 @@ class Settings(Configuration):
         self.jinja2_templates = jinja2_templates
         self.loguru_logger = loguru_logger
         self.communex_client = communex_client
+        self.subnets = subnets
+        self.subnet_query_list = subnet_query_list
+        
+
+BT_RPC_METHODS = {
+    "version": 0,
+    "methods": [
+        "account_nextIndex",
+        "author_hasKey",
+        "author_hasSessionKeys",
+        "author_insertKey",
+        "author_pendingExtrinsics",
+        "author_removeExtrinsic",
+        "author_rotateKeys",
+        "author_submitAndWatchExtrinsic",
+        "author_submitExtrinsic",
+        "author_unwatchExtrinsic",
+        "chainHead_unstable_body",
+        "chainHead_unstable_call",
+        "chainHead_unstable_follow",
+        "chainHead_unstable_genesisHash",
+        "chainHead_unstable_header",
+        "chainHead_unstable_stopBody",
+        "chainHead_unstable_stopCall",
+        "chainHead_unstable_stopStorage",
+        "chainHead_unstable_storage",
+        "chainHead_unstable_unfollow",
+        "chainHead_unstable_unpin",
+        "chain_getBlock",
+        "chain_getBlockHash",
+        "chain_getFinalisedHead",
+        "chain_getFinalizedHead",
+        "chain_getHead",
+        "chain_getHeader",
+        "chain_getRuntimeVersion",
+        "chain_subscribeAllHeads",
+        "chain_subscribeFinalisedHeads",
+        "chain_subscribeFinalizedHeads",
+        "chain_subscribeNewHead",
+        "chain_subscribeNewHeads",
+        "chain_subscribeRuntimeVersion",
+        "chain_unsubscribeAllHeads",
+        "chain_unsubscribeFinalisedHeads",
+        "chain_unsubscribeFinalizedHeads",
+        "chain_unsubscribeNewHead",
+        "chain_unsubscribeNewHeads",
+        "chain_unsubscribeRuntimeVersion",
+        "childstate_getKeys",
+        "childstate_getKeysPaged",
+        "childstate_getKeysPagedAt",
+        "childstate_getStorage",
+        "childstate_getStorageEntries",
+        "childstate_getStorageHash",
+        "childstate_getStorageSize",
+        "delegateInfo_getDelegate",
+        "delegateInfo_getDelegated",
+        "delegateInfo_getDelegates",
+        "neuronInfo_getNeuron",
+        "neuronInfo_getNeuronLite",
+        "neuronInfo_getNeurons",
+        "neuronInfo_getNeuronsLite",
+        "offchain_localStorageGet",
+        "offchain_localStorageSet",
+        "payment_queryFeeDetails",
+        "payment_queryInfo",
+        "state_call",
+        "state_callAt",
+        "state_getChildReadProof",
+        "state_getKeys",
+        "state_getKeysPaged",
+        "state_getKeysPagedAt",
+        "state_getMetadata",
+        "state_getPairs",
+        "state_getReadProof",
+        "state_getRuntimeVersion",
+        "state_getStorage",
+        "state_getStorageAt",
+        "state_getStorageHash",
+        "state_getStorageHashAt",
+        "state_getStorageSize",
+        "state_getStorageSizeAt",
+        "state_queryStorage",
+        "state_queryStorageAt",
+        "state_subscribeRuntimeVersion",
+        "state_subscribeStorage",
+        "state_traceBlock",
+        "state_unsubscribeRuntimeVersion",
+        "state_unsubscribeStorage",
+        "subnetInfo_getLockCost",
+        "subnetInfo_getSubnetHyperparams",
+        "subnetInfo_getSubnetInfo",
+        "subnetInfo_getSubnetsInfo",
+        "subscribe_newHead",
+        "system_accountNextIndex",
+        "system_addLogFilter",
+        "system_addReservedPeer",
+        "system_chain",
+        "system_chainType",
+        "system_dryRun",
+        "system_dryRunAt",
+        "system_health",
+        "system_localListenAddresses",
+        "system_localPeerId",
+        "system_name",
+        "system_nodeRoles",
+        "system_peers",
+        "system_properties",
+        "system_removeReservedPeer",
+        "system_reservedPeers",
+        "system_resetLogFilter",
+        "system_syncState",
+        "system_unstable_networkState",
+        "system_version",
+        "transaction_unstable_submitAndWatch",
+        "transaction_unstable_unwatch",
+        "unsubscribe_newHead",
+    ]
+}
