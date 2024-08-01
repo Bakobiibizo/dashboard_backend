@@ -12,9 +12,13 @@ from communex._common import get_node_url
 # Initialize CommuneClient
 comx = CommuneClient(get_node_url())
 
-KEYRING_PATH = Path("./wallet/keystore/keyring")
-if KEYRING_PATH.exists():
-    KEYRING_PATH.mkdir(parents=True, exist_ok=True)
+KEYSTORE_PATH = Path("./wallet/keystore")
+if not KEYSTORE_PATH.exists():  
+    KEYSTORE_PATH.mkdir(parents=True, exist_ok=True)
+
+KEY_DICT_PATH = Path("./wallet/keystore/key_dict")
+if not KEY_DICT_PATH.exists():
+    KEY_DICT_PATH.mkdir(parents=True, exist_ok=True)
 
 QUERY_MAP_PATH = Path("./wallet/static/query_maps")
 if not QUERY_MAP_PATH.exists():
@@ -28,6 +32,9 @@ STATIC_PATH = Path("./wallet/static")
 if not STATIC_PATH.exists():
     STATIC_PATH.mkdir(parents=True, exist_ok=True)
 
+MINER_KEY_PATH = Path("wallet/raw_keys")
+if not MINER_KEY_PATH.exists():
+    MINER_KEY_PATH.mkdir(parents=True, exist_ok=True)
 
 logger = logger.bind(name="data_models")
 logger.info("Initializing data models...")
@@ -35,10 +42,11 @@ with open(f"{LOG_PATH}/data_models.log", "w", encoding="utf-8") as f:
     f.write("")
 logger.add(sink="./wallet/logs/data_models.log", level="INFO")
 
+
 HOST = "0.0.0.0"
 PORT = 5500
 RELOAD = True
-SUBNETS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17]
+SUBNETS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17]
 SUBNET_QUERY_LIST = [
     "query_map_key",
     "query_map_weights",
@@ -144,6 +152,8 @@ SUBNET_VALIDATORS = {
 }
 
 
+
+
 @dataclass
 class Configuration:
     host: field = field(default=HOST)
@@ -152,7 +162,9 @@ class Configuration:
     querymap_path: field = field(default=QUERY_MAP_PATH)
     log_path: field = field(default=LOG_PATH)
     static_path: field = field(default=STATIC_PATH)
-    keyring_path: field = field(default=KEYRING_PATH)
+    key_dict_path: field = field(default=KEY_DICT_PATH)
+    miner_key_path: field = field(default=MINER_KEY_PATH)
+    keystore_path: field = field(default=KEYSTORE_PATH)
     fastapi: field = field(default=app)
     jinja2_templates: field = field(default=templates)
     loguru_logger: field = field(default=logger)
@@ -171,7 +183,9 @@ class Settings(Configuration):
         querymap_path=QUERY_MAP_PATH,
         log_path=LOG_PATH,
         static_path=STATIC_PATH,
-        keyring_path=KEYRING_PATH,
+        key_dict_path=KEY_DICT_PATH,
+        miner_key_path=MINER_KEY_PATH,
+        keystore_path=KEYSTORE_PATH,
         fastapi=app,
         jinja2_templates=templates,
         loguru_logger=logger,
@@ -187,7 +201,9 @@ class Settings(Configuration):
         self.querymap_path = querymap_path
         self.log_path = log_path
         self.static_path = static_path
-        self.keyring_path = keyring_path
+        self.key_dict_path = key_dict_path
+        self.miner_key_path = miner_key_path
+        self.keystore_path = keystore_path
         self.fastapi = fastapi
         self.jinja2_templates = jinja2_templates
         self.loguru_logger = loguru_logger

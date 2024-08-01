@@ -25,7 +25,7 @@ class Wallet:
         self._keyring = {}
         self._encrypted_uuid = None
         self._verification_uuid = None
-        self.keystore_path = Settings().keyring_path
+        self.keystore_path = Settings().key_dict_path
 
     @property
     def keyring(self):
@@ -48,23 +48,22 @@ class Wallet:
             return json.loads(f.read())
 
     def load_keyring(self, key_dict):
-        logger.info("Loading keyring...")
+        logger.info("Loading key_dict...")
         for key, values in key_dict.items():
             self._keyring[key] = Keypair(
                 ss58_address=values["ss58_address"],
                 public_key=values["public_key"],
                 private_key=values["private_key"],
             )
-        return self.keyring
+        return self._keyring
 
     def verify_password(self):
         logger.info("Verifying password...")
-        if not self._encrypted_uuid or not self._verification_uuid:
-            raise EncryptionError("Missing encrypted uuid or verification uuid")
         decrypted_uuid = self.decrypt_and_decode(self._encrypted_uuid)
-        return hmac.compare_digest(
-            decrypted_uuid.encode("utf-8"), self._verification_uuid.encode("utf-8")
-        )
+        if decrypted_uuid == self._verification_uuid:
+            return True
+        else:
+            return False
 
     def setup_verification(self, password_task, password):
         logger.info("Setting up verification...")
@@ -106,25 +105,25 @@ class Wallet:
         decrypted_data = f.decrypt(encrypted_data).decode("utf-8")
         return json.loads(decrypted_data)
 
-    def change_master_password(self, filepath="wallet/keystore/key_dict"):
+    def change_master_password(self, filepath=CONFIG.key_dict_path):
         logger.info("Changing master password...")
         if not self._keyring:
-            raise ValueError("No keyring loaded")
+            raise ValueError("No key_dict loaded")
 
         current_key_dict = self.decrypt_and_load_data(filepath)
         self.encrypt_and_save_data(current_key_dict, filepath)
         
 
-    def init_keyring(self, keypath="wallet/keystore/key_dict"):
-        logger.info("Initializing keyring...")
+    def init_keyring(self, keypath=CONFIG.keystore_path):
+        logger.info("Initializing key_dict...")
         encrypted_key_dict = self.get_encrypted_key_dict(keypath)
         decrypted_key_dict = self.decrypt_and_decode(encrypted_key_dict)
         self._keyring = self.load_keyring(decrypted_key_dict)
         
 
-    def init_keydir(self, keydir="wallet/tigerking"):
+    def init_keydir(self, keydir=CONFIG.miner_key_path):
         logger.info("Initializing keydir...")
-        keypath = Path("wallet/keystore/key_dict")
+        keypath = CONFIG.keystore_path / "key_dict"
         key_dict = {}
         for filename in os.listdir(keydir):
             filepath = os.path.join(keydir, filename)
@@ -135,12 +134,10 @@ class Wallet:
                 key_dict[filename] = file_content
                 key_dict[filename]["path"] = filepath
         self.encrypt_and_save_data(key_dict, keypath)   
-        self.init_keyring(keypath)
+        self.init_key_dict(keypath)
 
 
 if __name__ == "__main__":
     wallet = Wallet()
-    # wallet.init_keydir("wallet/tigerking")
-    # unencrypted_data = wallet.decrypt_and_load_data("wallet/keystore/key_dict"))
-    # keyring = wallet.load_keyring()
-    keyring = wallet.decrypt_and_load_data("wallet/keystore/key_dict")
+    wallet.init_keydir(CONFIG.miner_key_path)
+    unencrypted_data = wallet.decrypt_and_load_data(CONFIG.key_dict_path / "key_dict")

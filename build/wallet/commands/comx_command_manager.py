@@ -20,7 +20,7 @@ class ComxCommandManager:
         self.querymap_path = CONFIG.querymap_path
         self.query_maps = {}
         self.commands_list = []
-        self.command_whitelist = []
+        self.command_whitelist = ["register", "transfer"]
         self.commands_string = ""
         self.commands = {}
         self.data_maps = {}
@@ -67,8 +67,6 @@ class ComxCommandManager:
         logger.info(f"Executing command: {command_name}")        
         if command_name in self.command_whitelist:
             return self.commands[command_name](**kwargs)
-        elif command_name in self.commands_list:
-            wallet.ask_for_password(self.commands[command_name])
         else:
             raise ValueError(f"Command {command_name} not found. Available commands: {self.commands_list}")
         
