@@ -66,12 +66,21 @@ def construct_weights(subnet, vali_uid):
 def vote():
     for subnet in CONFIG.subnets:
         if subnet in [1, 2]:
-            continue
+            continue]
         subnet = 10
         uids, weights = construct_weights(subnet, CONFIG.subnet_validators[f"{subnet}"]["uid"])
     print(weights)
     print(uids)
+
+def get_voter_uids(subnet):
+    miner_uids = get_miner_uids(subnet)
+    for uid in miner_uids:
+        balances = manager.load_subnet_query_data("balances")
+        if balances[uid] < 5200:
+            continue
+        return uid
     
+
     
 vote()
 

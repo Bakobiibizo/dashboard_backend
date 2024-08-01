@@ -4,19 +4,11 @@ import os
 from wallet.encryption.wallet import Wallet
 from wallet.commands.comx_command_manager import ComxCommandManager, CONFIG
 from wallet.commands.transfer import transfer
+from communex.client import CommuneClient
 
 manager = ComxCommandManager()
 wallet = Wallet()
 
-
-def get_funding_key(key="vali::eden00"):
-    
-    keydict = wallet.get_encrypted_key_dict(CONFIG.key_dict_path)
-    unecrypted = wallet.decrypt_and_decode(keydict)
-    keyring = wallet.load_keyring(unecrypted)
-    return keyring[f"{key}.json"]
-
-FUNDING_KEY = get_funding_key()
 
 def get_miner_keys():
     miner_keys = {}
@@ -33,18 +25,24 @@ MINER_KEYS = get_miner_keys()
 
 
 def register(name, keyname, ip, port, subnet):
-    command = ["comx", "module", "register", f"{name}", f"{keyname}", "--ip", f"{ip}", "--port", f"{port}", "--netuid", f"{subnet}"]
-    print(command)
-    # try:
-        # subprocess.run(command, check=True)
-    # except subprocess.CalledProcessError as e:
-        # print(e)
-
+    address = f"{ip}:{port}"
+    try:
+        result = manager.get_commands_dict()["register_module"](key=name, name=keyname, address=address, subnet=subnet)
+        if result.is_success:
+            print(result.is_success)
+            return result.extrinsic
+        else:
+            print(result.error)
+    except Exception as e:
+        print(e)
+        return
         
-def bulk_register():
+def bulk_register(miner_keys):
     for subnet in CONFIG.subnets:
-        for key, data in MINER_KEYS.items():
-            register(data["name"], data["key"], "127.0.0.1", "8000", subnet)
+        for i, key in enumerate(miner_keys.keys()):
+            register(key, key, "127.0.0.1", 8000 + i, subnet)
             
-def fund_key(key):
-    transfer(FUNDING_KEY, "10", key)
+def fund_keys(funding_key, key_names, amount):
+    for key in key_names:
+        transfer(funding_key, amount, key)
+        
