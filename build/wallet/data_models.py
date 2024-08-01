@@ -40,11 +40,9 @@ PORT = 5500
 RELOAD = True
 SUBNETS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17]
 SUBNET_QUERY_LIST = [
-    "query_map_incentive"
-    "query_map_emission"
-    "query_map_dividend"
-    "query_map_weights"
-    "query_map_lastupdate"
+    "query_map_key",
+    "query_map_weights",
+    "query_map_address"
 ]
 
 # Initialize FastAPI app
@@ -67,6 +65,84 @@ templates = Jinja2Templates(directory="./wallet/templates")
 
 app.mount("/static", StaticFiles(directory="./wallet/static"), name="static")
 
+SUBNET_VALIDATORS = {
+    "3": {
+        "name": "fam",
+        "key": "5FABzSh9BvHvNw8pnAwVQDwAMT2mM778njrC4aMDRJgqHmCy",
+        "uid": 278,
+    },
+    "4": {
+        "name": "fam",
+        "key": "5FABzSh9BvHvNw8pnAwVQDwAMT2mM778njrC4aMDRJgqHmCy",
+        "uid": 28,
+    },
+    "5": {
+        "name": "fam",
+        "key": "5FABzSh9BvHvNw8pnAwVQDwAMT2mM778njrC4aMDRJgqHmCy",
+        "uid": 131,
+    },
+    "6": {
+        "name": "fam",
+        "key": "5FABzSh9BvHvNw8pnAwVQDwAMT2mM778njrC4aMDRJgqHmCy",
+        "uid": 30,
+    },
+    "7": {
+        "name": "fam",
+        "key": "5FABzSh9BvHvNw8pnAwVQDwAMT2mM778njrC4aMDRJgqHmCy",
+        "uid": 57,
+    },
+    "8": {
+        "name": "fam",
+        "key": "5FABzSh9BvHvNw8pnAwVQDwAMT2mM778njrC4aMDRJgqHmCy",
+        "uid": 31,
+    },
+    "9": {
+        "name": "fam",
+        "key": "5FABzSh9BvHvNw8pnAwVQDwAMT2mM778njrC4aMDRJgqHmCy",
+        "uid": 71,
+    },
+    "10": {
+        "name": "commie3",
+        "key": "5FABzSh9BvHvNw8pnAwVQDwAMT2mM778njrC4aMDRJgqHmCy",
+        "uid": 66,
+    },
+    "11": {
+        "name": "fam",
+        "key": "5FABzSh9BvHvNw8pnAwVQDwAMT2mM778njrC4aMDRJgqHmCy",
+        "uid": 18,
+    },
+    "12": {
+        "name": "fam",
+        "key": "5FABzSh9BvHvNw8pnAwVQDwAMT2mM778njrC4aMDRJgqHmCy",
+        "uid": 9,
+    },
+    "13": {
+        "name": "fam",
+        "key": "5FABzSh9BvHvNw8pnAwVQDwAMT2mM778njrC4aMDRJgqHmCy",
+        "uid": 18,
+    },
+    "14": {
+        "name": "fam",
+        "key": "5FABzSh9BvHvNw8pnAwVQDwAMT2mM778njrC4aMDRJgqHmCy",
+        "uid": 249,
+    },
+    "15": {
+        "name": "fam",
+        "key": "5FABzSh9BvHvNw8pnAwVQDwAMT2mM778njrC4aMDRJgqHmCy",
+        "uid": 309,
+    },
+    "16": {
+        "name": "vali::comchat",
+        "key": "5D4o6H19z6ctWjS9HzxBpMxqhuzCCCsgXk49AqXGPUqZEpRt",
+        "uid": 1
+    },
+    "17": {
+        "name": "fam",
+        "key": "5FABzSh9BvHvNw8pnAwVQDwAMT2mM778njrC4aMDRJgqHmCy",
+        "uid": 145,
+    }    
+}
+
 
 @dataclass
 class Configuration:
@@ -83,6 +159,7 @@ class Configuration:
     communex_client: field = field(default=comx)
     subnets: field = field(default_factory=list)
     subnet_query_list: field = field(default_factory=list)
+    subnet_validators: field = field(default_factory=list)
 
 
 class Settings(Configuration):
@@ -101,6 +178,7 @@ class Settings(Configuration):
         communex_client=comx,
         subnets=SUBNETS,
         subnet_query_list=SUBNET_QUERY_LIST,
+        subnet_validators=SUBNET_VALIDATORS
     ):
         super().__init__(self)
         self.host = host
@@ -116,6 +194,7 @@ class Settings(Configuration):
         self.communex_client = communex_client
         self.subnets = subnets
         self.subnet_query_list = subnet_query_list
+        self.subnet_validators = subnet_validators
 
 
 BT_RPC_METHODS = {
@@ -231,18 +310,4 @@ BT_RPC_METHODS = {
         "transaction_unstable_unwatch",
         "unsubscribe_newHead",
     ],
-}
-
-SUBNET_VALIDATORS = {
-    "3": {
-        "name": "vali::synthia.",
-        "key": "5DUWKpGBneBbna6PFHZk18Gp9wyvLUFPiWy5maAARjRjayPp",
-        "uid": 149,
-    },
-    "4": {
-        "name": 'fam',
-        "key": "5FABzSh9BvHvNw8pnAwVQDwAMT2mM778njrC4aMDRJgqHmCy",
-        ""
-        
-    }
 }

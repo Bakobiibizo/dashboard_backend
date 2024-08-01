@@ -144,4 +144,3 @@ if __name__ == "__main__":
     # unencrypted_data = wallet.decrypt_and_load_data("wallet/keystore/key_dict"))
     # keyring = wallet.load_keyring()
     keyring = wallet.decrypt_and_load_data("wallet/keystore/key_dict")
-    print(keyring)

@@ -76,7 +76,7 @@ class ComxCommandManager:
         logger.info("Getting query map list...")
         for command in self.commands_list:
             if command.startswith("query_map_"):
-                self.query_maps[command] = comx.__getattribute__(command)
+                self.query_maps[command.split("query_map_")[1].split(".")[0]] = comx.__getattribute__(command)
         return self.query_maps
         
     def execute_query_map(self, query_map_name, **kwargs):
@@ -107,10 +107,14 @@ class ComxCommandManager:
             else:
                 query_maps[name] = json.loads(query_map.read_text(encoding="utf-8"))
         return query_maps
+    
+    def load_subnet_query_data(self, query_name, subnet):
+        with open(f"{CONFIG.querymap_path}/{subnet}/query_map_{query_name}.json", "r", encoding="utf-8") as f:
+            return json.loads(f.read())
         
     def execute_all_query_map(self):
         logger.info("Gathering all query maps...")
-        ignore_list = ["query_map_min_stake", "query_map_max_stake", "query_map_vote_mode_subnet"]
+        ignore_list = ["min_stake", "max_stake", "vote_mode_subnet"]
         query_maps = []
         for query_map_name in self.query_maps:
             if query_map_name in ignore_list:
@@ -123,7 +127,7 @@ class ComxCommandManager:
                     save_path = Path(f"{self.querymap_path}/{subnet}/{query_map_name}.json")
                     save_path.write_text(json.dumps(querymap, indent=4), encoding="utf-8")
                     query_maps.append(querymap)
-            if query_map_name == "query_map_immunity_period":
+            if query_map_name == "immunity_period":
                 querymap = self.execute_query_map(query_map_name=query_map_name, extract_value=False)
             else:
                 querymap = self.execute_query_map(query_map_name=query_map_name)    
@@ -145,5 +149,4 @@ async def run_query_map_loop():
         
 if __name__ == "__main__":
     manager = asyncio.run(run_query_map_loop())
-    print(manager.commands_list)
     
