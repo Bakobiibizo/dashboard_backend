@@ -26,6 +26,7 @@ class Wallet:
         self._encrypted_uuid = None
         self._verification_uuid = None
         self.keystore_path = Settings().key_dict_path
+        self.key_data = {}
 
     @property
     def keyring(self):
@@ -50,11 +51,21 @@ class Wallet:
     def load_keyring(self, key_dict):
         logger.info("Loading key_dict...")
         for key, values in key_dict.items():
+            ss58_address=values["ss58_address"]
+            public_key=values["public_key"]
+            private_key=values["private_key"]
+            name=values["path"]
+            
             self._keyring[key] = Keypair(
-                ss58_address=values["ss58_address"],
-                public_key=values["public_key"],
-                private_key=values["private_key"],
+                public_key=public_key,
+                private_key=private_key,
+                ss58_address=ss58_address
             )
+            
+            self.key_data[key] = {
+                "key": ss58_address,
+                "name": name
+            }
         return self._keyring
 
     def verify_password(self):
@@ -134,10 +145,8 @@ class Wallet:
                 key_dict[filename] = file_content
                 key_dict[filename]["path"] = filepath
         self.encrypt_and_save_data(key_dict, keypath)   
-        self.init_key_dict(keypath)
-
+        self.init_keyring(keypath)
 
 if __name__ == "__main__":
     wallet = Wallet()
     wallet.init_keydir(CONFIG.miner_key_path)
-    unencrypted_data = wallet.decrypt_and_load_data(CONFIG.key_dict_path / "key_dict")

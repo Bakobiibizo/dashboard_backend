@@ -1,89 +1,99 @@
 import os
 import json
+import asyncio
+from typing import Dict, List, Tuple
 from wallet.commands.comx_command_manager import ComxCommandManager
 from wallet.encryption.wallet import Wallet
 from wallet.data_models import Settings
 
 CONFIG = Settings()
+logger = CONFIG.loguru_logger.bind(name="vote")
 
-manager = ComxCommandManager()
-wallet = Wallet()
+class VotingService:
+    def __init__(self):
+        self.manager = ComxCommandManager()
+        self.wallet = Wallet()
+        self.wallet.init_keyring(CONFIG.key_dict_path)
+        self.keyring = self.wallet.keyring
 
-keyring = wallet.keyring
+    async def construct_miners_dict(self, subnet: int) -> Dict[str, Dict]:
+        logger.info(f"Constructing miners dict for subnet {subnet}...")
+        miners_dict = {}
+        miner_key_path = CONFIG.miner_key_path
+        uid_map = await self.manager.load_subnet_query_data("key", subnet)
 
-print(keyring)
+        for key in os.listdir(miner_key_path):
+            with open(os.path.join(miner_key_path, key), "r", encoding="utf-8") as f:
+                miner_key = json.loads(f.read())["data"]
+                miner_data = json.loads(miner_key)
+                name = key.split(".")[0]
+                key = miner_data["ss58_address"]
+                for uid, uidkey in uid_map.items():
+                    if key == uidkey:
+                        miners_dict[name] = {
+                            "uid": uid,
+                            "name": name,
+                            "key": key
+                        }
+        logger.debug(f"Miners dict for subnet {subnet}: {miners_dict}")
+        return miners_dict
 
-#QUERY_MAPS = manager.execute_all_query_map()
+    async def get_vali_uid(self, subnet: int) -> int:
+        logger.info(f"Getting vali uid for subnet {subnet}...")
+        return CONFIG.subnet_validators[f"{subnet}"]["uid"]
 
-SUBNET_VALIDATORS = CONFIG.subnet_validators
-SUBNET_LIST = CONFIG.subnets
-    
-    
-def construct_miners_dict(subnet):    
-    miner_key_path = CONFIG.miner_key_path
-    miners_dict = {}
-    for key in os.listdir(f"{miner_key_path}"):
-        with open(f"{miner_key_path}/{key}", "r", encoding="utf-8") as f:
-            miner_key = json.loads(f.read())["data"]
-            miner_data = json.loads(miner_key)
-            name = key.split(".")[0]
-            key = miner_data["ss58_address"]
-            uid_map = manager.load_subnet_query_data("key", subnet)
-            for uid, uidkey in uid_map.items():
-                if key == uidkey:
-                    miners_dict[name] = {
-                        "uid": uid,
-                        "name": name,
-                        "key": key
-                    }
+    async def construct_weights(self, subnet: int, vali_uid: int) -> Tuple[List[int], List[int]]:
+        logger.info(f"Constructing weights for subnet {subnet}...")
+        uids = []
+        weights = []
+        vali_weights = await self.manager.load_subnet_query_data("weights", subnet)
+        vali_weights = vali_weights[str(vali_uid)]
 
-def get_vali_uid(subnet):
-    return SUBNET_VALIDATORS[str(subnet)]["uid"]
-    
-def get_miner_uids(subnet):
-    return [value["uid"] for value in construct_miners_dict(subnet).values()]
-    
-def construct_weights(subnet, vali_uid):
-    miner_uids = get_miner_uids(subnet)
-    uids = []
-    weights = []
-    vali_weights = manager.load_subnet_query_data("weights", subnet)[str(vali_uid)]
-    for uid, weight in vali_weights:
-        uids.append(uid)
-        weights.append(weight)
-    max_value = max(weights)
-    for uid in miner_uids:
-        if uid in uids:
-            if uid == vali_uid:
+        for uid, weight in vali_weights:
+            uids.append(uid)
+            weights.append(weight)
+
+        max_value = max(weights)
+        encrypted = self.wallet.get_encrypted_key_dict(CONFIG.key_dict_path)
+        key_dict = self.wallet.decrypt_and_decode(encrypted)
+
+        for key in self.keyring.keys():
+            key_data = key_dict[key]
+            miner_uid = key_data["uid"]
+            if miner_uid in uids:
+                if miner_uid == vali_uid:
+                    continue
+                index = uids.index(miner_uid)
+                weights[index] = max_value - weights[index]
+            else:
+                weights.append(max_value)
+        return uids, weights
+
+    async def get_voter_keys(self, miners_dict: Dict) -> List:
+        voter_keys = []
+        balance_map = await self.manager.execute_query_map("balances")
+        for key, data in miners_dict.items():
+            if data["uid"] in balance_map:
+                voter_keys.append(self.keyring[f"{key}.json"])
+        return voter_keys
+
+    async def vote(self):
+        for subnet in CONFIG.subnets:
+            if subnet in [1, 2]:
                 continue
-            index = uids.index(uid)
-            weights[index] = max_value - weights[index]
-        else:
-            weights.append(max_value)
-    return uids, weights
-    
-    
-def vote():
-    for subnet in CONFIG.subnets:
-        if subnet in [1, 2]:
-            continue]
-        subnet = 10
-        uids, weights = construct_weights(subnet, CONFIG.subnet_validators[f"{subnet}"]["uid"])
-    print(weights)
-    print(uids)
+            try:
+                miners_dict = await self.construct_miners_dict(subnet)
+                vali_uid = await self.get_vali_uid(subnet)  # This is not an async function, so no await
+                uids, weights = await self.construct_weights(subnet, vali_uid)
+                voters = await self.get_voter_keys(miners_dict)
+                logger.info(f"Subnet: {subnet}, UIDs: {uids}, Weights: {weights}, Voters: {voters}")
+                # Implement voting logic here
+            except Exception as e:
+                logger.error(f"Error during voting for subnet {subnet}: {str(e)}")
 
-def get_voter_uids(subnet):
-    miner_uids = get_miner_uids(subnet)
-    for uid in miner_uids:
-        balances = manager.load_subnet_query_data("balances")
-        if balances[uid] < 5200:
-            continue
-        return uid
-    
+async def main():
+    voting_service = VotingService()
+    await voting_service.vote()
 
-    
-vote()
-
-
-    
-    
+if __name__ == "__main__":
+    asyncio.run(main())

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Query Map Reports</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+        select, input { margin-bottom: 20px; margin-right: 10px; }
+        #reportContainer { max-width: 1200px; margin: auto; }
+        #chartContainer { height: 600px; }
+    </style>
+</head>
+<body>
+    <div id="reportContainer">
+        <h1>Query Map Reports</h1>
+        <select id="reportType">
+            {% for report_type in report_types %}
+            <option value="{{ report_type }}">{{ report_type|capitalize }} Report</option>
+            {% endfor %}
+        </select>
+        <input type="number" id="limit" value="20" min="1" max="100">
+        <label for="limit">Top entries to show</label>
+        <div id="chartContainer">
+            <canvas id="reportChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+    let chart;
+
+    async function fetchReportData(reportType) {
+        const response = await fetch(`/api/report/${reportType}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return await response.json();
+    }
+
+    function formatDollarAmount(amount) {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(amount);
+    }
+
+    function createChart(data, reportType) {
+        const ctx = document.getElementById('reportChart').getContext('2d');
+        
+        if (chart) {
+            chart.destroy();
+        }
+
+        const sortedData = Object.entries(data).sort((a, b) => b[1] - a[1]);
+        const limit = parseInt(document.getElementById('limit').value);
+        const limitedData = sortedData.slice(0, limit);
+
+        const labels = limitedData.map(item => item[0]);
+        const values = limitedData.map(item => item[1]);
+
+        chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: reportType === 'balance' ? 'Free Balance (USD)' : 'Stake Amount (USD)',
+                    data: values,
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value, index, values) {
+                                return formatDollarAmount(value);
+                            }
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            callback: function(value, index, values) {
+                                return this.getLabelForValue(value).substr(0, 10) + '...';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += formatDollarAmount(context.parsed.y);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    async function updateReport() {
+        const reportType = document.getElementById('reportType').value;
+        try {
+            const data = await fetchReportData(reportType);
+            createChart(data, reportType);
+        } catch (error) {
+            console.error('Error fetching report data:', error);
+        }
+    }
+
+    document.getElementById('reportType').addEventListener('change', updateReport);
+    document.getElementById('limit').addEventListener('change', updateReport);
+
+    // Initial load
+    updateReport();
+    </script>
+</body>
+</html>

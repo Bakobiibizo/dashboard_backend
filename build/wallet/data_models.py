@@ -18,7 +18,7 @@ if not KEYSTORE_PATH.exists():
 
 KEY_DICT_PATH = Path("./wallet/keystore/key_dict")
 if not KEY_DICT_PATH.exists():
-    KEY_DICT_PATH.mkdir(parents=True, exist_ok=True)
+    KEY_DICT_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 QUERY_MAP_PATH = Path("./wallet/static/query_maps")
 if not QUERY_MAP_PATH.exists():
@@ -46,7 +46,7 @@ logger.add(sink="./wallet/logs/data_models.log", level="INFO")
 HOST = "0.0.0.0"
 PORT = 5500
 RELOAD = True
-SUBNETS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17]
+SUBNETS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17]
 SUBNET_QUERY_LIST = [
     "query_map_key",
     "query_map_weights",

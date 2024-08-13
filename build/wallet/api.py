@@ -1,8 +1,10 @@
+import os
 import json
 import argparse
 from pathlib import Path
 import asyncio
 import signal
+import requests
 from fastapi import Request, HTTPException
 from wallet.encryption.wallet import Wallet
 from wallet.commands.comx_command_manager import ComxCommandManager, run_query_map_loop
@@ -70,9 +72,9 @@ async def get_query_map(map_name: str):
 async def get_key_details(key: str):
     if key not in wallet.keyring:
         raise HTTPException(status_code=404, detail="Key not found")
-    balance_path = manager.querymap_path / "query_map_balance.json"
-    staketo_path = manager.querymap_path / "query_map_stake_to.json"
-    stakefrom_path = manager.querymap_path / "query_map_stake_from.json"
+    balance_path = manager.querymap_path / "balances.json"
+    staketo_path = manager.querymap_path / "stake_to.json"
+    stakefrom_path = manager.querymap_path / "stake_from.json"
     return {
         "ss58_address": wallet.keyring[key].ss58_address,
         "name": wallet.keyring[key].name,
@@ -109,6 +111,55 @@ async def unstake(key: str, amount: float, dest: str):
         raise HTTPException(status_code=404, detail="Key not found")
     return comx.unstake(wallet.keyring[key], amount, dest)
 
+def get_exchange_rate():
+    url = "https://api.comstats.org/stats/"
+    stats_data = requests.get(url)
+    if stats_data.status_code == 200:
+        data = json.loads(stats_data.text)["stats"]
+        return data["price"]
+    
+
+EXCHANGE_RATE = float(os.getenv('COM_TO_USD_RATE', get_exchange_rate())) 
+
+@app.get("/reports")
+async def reports(request: Request):
+    report_types = ["balances", "staketo", "stakefrom"]
+    return templates.TemplateResponse("reports.html", {
+        "request": request, 
+        "report_types": report_types
+    })
+
+@app.get("/api/report/{report_type}")
+async def get_report(report_type: str):
+    if report_type not in ["balances", "staketo", "stakefrom"]:
+        raise HTTPException(status_code=404, detail="Report type not found")
+    
+    query_map_path = manager.querymap_path / f"{report_type}.json"
+    if not query_map_path.exists():
+        raise HTTPException(status_code=404, detail="Report data not found")
+    
+    report_data = json.loads(query_map_path.read_text("utf-8"))
+    processed_data = None
+    if report_type == "balance":
+        # Extract only the free balance
+        processed_data = {key: value['data']['free'] for key, value in report_data.items()}
+    elif report_type in ["staketo", "stakefrom"]:
+        # Sum up all stake amounts for each key
+        processed_data = {key: sum(stake[1] for stake in value) for key, value in report_data.items()}
+    
+    return processed_data
+
+def setup():
+    CONFIG.port = input("Enter the port to listen on: ") or 5500
+
+    CONFIG.host = input("Enter the host to listen on: ") or "0.0.0.0"
+    
+    CONFIG.reload = input("Enter the reload setting: ")
+    
+    CONFIG.querymap_path = Path(input("Enter the path to the query map: ")) or Path("static/query_maps")
+
+    CONFIG.querymap_path.mkdir(parents=True, exist_ok=True)
+    
 def argument_parser():
     parser = argparse.ArgumentParser(description="Wallet API")
     parser.add_argument("--setup", action="store_true", help="Be prompted to enter the configuration of the wallet")
@@ -116,25 +167,11 @@ def argument_parser():
 
     return parser.parse_args()
 
-def setup():
-    CONFIG.port = input("Enter the port to listen on: ")
-
-    CONFIG.host = input("Enter the host to listen on: ")
-    
-    CONFIG.reload = input("Enter the reload setting: ")
-    
-    CONFIG.keyring_path = Path(input("Enter the path to the keyring: "))
-    
-    CONFIG.keyring_path.mkdir(parents=True, exist_ok=True)
-    
-    CONFIG.querymap_path = Path(input("Enter the path to the query map: "))
-
-    CONFIG.querymap_path.mkdir(parents=True, exist_ok=True)
-    
-
 # Run the FastAPI app
 if __name__ == "__main__":
     args = argument_parser()
+    if not os.path.exists("wallet/keystore/key_dict"):
+        wallet.init_keydir()
     if args.setup:
         args.setup()
     if args.loop:
